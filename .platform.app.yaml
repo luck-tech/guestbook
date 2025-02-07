@@ -4,7 +4,7 @@ type: php:8.3
 
 dependencies:
     php:
-        composer/composer: "^2"
+        composer/composer: '^2'
 
 runtime:
     extensions:
@@ -16,7 +16,6 @@ runtime:
         - pdo_pgsql
         - sodium
         - xsl
-        
 
 variables:
     php:
@@ -28,24 +27,24 @@ disk: 1024
 
 web:
     locations:
-        "/":
-            root: "public"
+        '/':
+            root: 'public'
             expires: 1h
-            passthru: "/index.php"
+            passthru: '/index.php'
 
 mounts:
-    "/var/cache": { source: local, source_path: var/cache }
-    
+    '/var/cache': { source: local, source_path: var/cache }
+    '/public/uploads': { source: service, service: files, source_path: uploads }
 
 relationships:
-    database: "database:postgresql"
-    
+    database: 'database:postgresql'
+
 hooks:
     build: |
         set -x -e
 
         curl -fs https://get.symfony.com/cloud/configurator | bash
-        
+
         NODE_VERSION=22 symfony-build
 
     deploy: |
@@ -61,6 +60,13 @@ crons:
     clean-expired-sessions:
         spec: '17,47 * * * *'
         cmd: croncape php-session-clean
+    comment_cleanup:
+        # Cleanup every night at 11.50 pm (UTC).
+        spec: '50 23 * * *'
+        cmd: |
+            if [ "$PLATFORM_ENVIRONMENT_TYPE" = "production" ]; then
+                croncape symfony console app:comment:cleanup
+            fi
 
 workers:
     messenger:

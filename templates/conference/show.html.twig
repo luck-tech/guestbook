@@ -3,10 +3,16 @@
 {% block title %}Conference Guestbook - {{ conference }}{% endblock %}
 
 {% block body %}
+    {% for message in app.flashes('notification') %}
+        <div class="alert alert-info alert-dismissible fade show">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        </div>
+    {% endfor %}
     <h2>{{ conference }} Conference</h2>
 
     {% if comments|length > 0 %}
-        <div>There are {{ comments|length }} comments.</div>
+    <div>{{ 'nb_of_comments'|trans({count: comments|length}) }}</div>
         
 	{% for comment in comments %}
             {% if comment.photofilename %}
@@ -22,12 +28,16 @@
         {% endfor %}
 
 	{% if previous >= 0 %}
-            <a href="{{ path('conference', { id: conference.id, offset: previous }) }}">Previous</a>
+            <a href="{{ path('conference', { slug: conference.slug, offset: previous }) }}">Previous</a>
         {% endif %}
         {% if next < comments|length %}
-            <a href="{{ path('conference', { id: conference.id, offset: next }) }}">Next</a>
+            <a href="{{ path('conference', { slug: conference.slug, offset: next }) }}">Next</a>
         {% endif %}
     {% else %}
         <div>No comments have been posted yet for this conference.</div>
     {% endif %}
+
+    <h2>Add your own feedback</h2>
+
+    {{ form(comment_form) }}
 {% endblock %}
